@@ -54,11 +54,11 @@ public class BrowseActivity extends AppCompatActivity implements SwipeRefreshLay
 
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.menu_refresh:
-				update();
-				return true;
+		if (item.getItemId() == R.id.menu_refresh){
+			update();
+			return true;
 		}
+
 		return super.onOptionsItemSelected(item);
 	}
 

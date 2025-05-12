@@ -33,13 +33,18 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-		switch (item.getItemId()) {
-			case R.id.menu_delete:
-				confirm();
-				return true;
-			case R.id.menu_export:
-				export();
-				return true;
+		long itemId = item.getItemId();
+		if (itemId == R.id.menu_delete){
+			confirm();
+			return true;
+		} else if (itemId == R.id.menu_export) {
+			export();
+			return true;
+		} else if (itemId == R.id.text_speech) {
+			//Intent intent = new Intent(this.getBaseContext(), TextToSpeech.class);
+
+			//this.getBaseContext().startActivity(intent);
+
 
 		}
 		return super.onOptionsItemSelected(item);

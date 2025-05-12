@@ -14,7 +14,7 @@ import androidx.core.content.FileProvider;
 
 import com.google.android.material.snackbar.Snackbar;
 
-import org.hcilab.projects.nlogx.BuildConfig;
+//import org.hcilab.projects.nlogx.BuildConfig;
 import org.hcilab.projects.nlogx.R;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -93,7 +93,7 @@ public class ExportTask extends AsyncTask<Void, Void, Void> {
 			JSONObject json = new JSONObject();
 			try {
 				long time = System.currentTimeMillis();
-				json.put("version",      BuildConfig.VERSION_CODE);
+				json.put("version",      0);
 				json.put("locale",       Util.getLocale(context));
 				json.put("model",        android.os.Build.MODEL);
 				json.put("device",       android.os.Build.DEVICE);

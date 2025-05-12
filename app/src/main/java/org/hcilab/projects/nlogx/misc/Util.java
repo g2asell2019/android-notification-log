@@ -16,7 +16,7 @@ import android.provider.Settings;
 
 import androidx.core.content.PermissionChecker;
 
-import org.hcilab.projects.nlogx.BuildConfig;
+//import org.hcilab.projects.nlogx.BuildConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,7 +63,7 @@ public class Util {
 		try {
 			ContentResolver contentResolver = context.getContentResolver();
 			String listeners = Settings.Secure.getString(contentResolver, "enabled_notification_listeners");
-			return !(listeners == null || !listeners.contains(BuildConfig.APPLICATION_ID + "/"));
+			return !(listeners == null || !listeners.contains("org.hcilab.projects.nlogx" + "/"));
 		} catch(Exception e) {
 			if(Const.DEBUG) e.printStackTrace();
 		}

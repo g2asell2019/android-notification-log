@@ -14,7 +14,7 @@ import androidx.preference.Preference;
 import androidx.preference.PreferenceFragmentCompat;
 import androidx.preference.PreferenceManager;
 
-import org.hcilab.projects.nlogx.BuildConfig;
+//import org.hcilab.projects.nlogx.BuildConfig;
 import org.hcilab.projects.nlogx.R;
 import org.hcilab.projects.nlogx.misc.Const;
 import org.hcilab.projects.nlogx.misc.DatabaseHelper;
@@ -70,7 +70,7 @@ public class SettingsFragment extends PreferenceFragmentCompat {
 
 		Preference prefVersion = pm.findPreference(Const.PREF_VERSION);
 		if(prefVersion != null) {
-			prefVersion.setSummary(BuildConfig.VERSION_NAME + (Const.DEBUG ? " dev" : ""));
+			prefVersion.setSummary("org.hcilab.projects.nlogx" + (Const.DEBUG ? " dev" : ""));
 		}
 	}
 

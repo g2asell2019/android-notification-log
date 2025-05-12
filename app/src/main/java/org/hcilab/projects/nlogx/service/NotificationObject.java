@@ -11,7 +11,7 @@ import android.service.notification.StatusBarNotification;
 
 import androidx.core.app.NotificationCompat;
 
-import org.hcilab.projects.nlogx.BuildConfig;
+//import org.hcilab.projects.nlogx.BuildConfig;
 import org.hcilab.projects.nlogx.misc.Const;
 import org.hcilab.projects.nlogx.misc.Util;
 import org.json.JSONObject;
@@ -217,7 +217,7 @@ class NotificationObject {
 			json.put("postTime",       postTime);
 			json.put("systemTime",     systemTime);
 			json.put("offset",         TimeZone.getDefault().getOffset(systemTime));
-			json.put("version",        BuildConfig.VERSION_CODE);
+			json.put("version",        0);
 			json.put("sdk",            android.os.Build.VERSION.SDK_INT);
 
 			json.put("isOngoing",      isOngoing);
