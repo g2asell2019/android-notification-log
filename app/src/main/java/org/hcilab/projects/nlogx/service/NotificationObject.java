@@ -127,6 +127,14 @@ class NotificationObject {
 		}
 	}
 
+	public String getTitle() {
+		return title;
+	}
+
+	public String getText() {
+		return text;
+	}
+
 	private void extract()  {
 		// General
 		when           = n.when;

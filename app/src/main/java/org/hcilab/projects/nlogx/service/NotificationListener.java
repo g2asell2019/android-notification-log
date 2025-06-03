@@ -4,10 +4,15 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Handler;
+import android.os.Looper;
 import android.service.notification.NotificationListenerService;
 import android.service.notification.StatusBarNotification;
+import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -17,8 +22,12 @@ import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationServices;
 
+import org.hcilab.projects.nlogx.Entity.AppFilterEntity;
 import org.hcilab.projects.nlogx.misc.Const;
 import org.hcilab.projects.nlogx.misc.Util;
+
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class NotificationListener extends NotificationListenerService {
 
@@ -30,6 +39,10 @@ public class NotificationListener extends NotificationListenerService {
 	private FusedLocationProviderClient fusedLocationClient = null;
 	private PendingIntent fusedLocationPendingIntent = null;
 
+	private final Handler mainHandler = new Handler(Looper.getMainLooper());
+	private final Executor executor = Executors.newSingleThreadExecutor();
+	private AppDatabase db;
+
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -38,6 +51,9 @@ public class NotificationListener extends NotificationListenerService {
 			startActivityRecognition();
 			startFusedLocationIntentService();
 		}
+		TextSpeechSingleton.init(getApplicationContext());
+		db = AppDatabase.getInstance(getApplicationContext());
+
 	}
 
 	@Override
@@ -48,6 +64,7 @@ public class NotificationListener extends NotificationListenerService {
 			stopFusedLocationIntentService();
 		}
 		super.onDestroy();
+		TextSpeechSingleton.shutdown();
 	}
 
 	@Override
@@ -58,6 +75,26 @@ public class NotificationListener extends NotificationListenerService {
 			startActivityRecognition();
 			startFusedLocationIntentService();
 		}
+		tryReconnectService();
+	}
+	public void tryReconnectService() {
+		toggleNotificationListenerService();
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+			ComponentName componentName =
+					new ComponentName(getApplicationContext(), NotificationListener.class);
+
+			//It say to Notification Manager RE-BIND your service to listen notifications again inmediatelly!
+			requestRebind(componentName);
+		}
+	}
+
+
+	private void toggleNotificationListenerService() {
+		PackageManager pm = getPackageManager();
+		pm.setComponentEnabledSetting(new ComponentName(this, NotificationListener.class),
+				PackageManager.COMPONENT_ENABLED_STATE_DISABLED, PackageManager.DONT_KILL_APP);
+		pm.setComponentEnabledSetting(new ComponentName(this, NotificationListener.class),
+				PackageManager.COMPONENT_ENABLED_STATE_ENABLED, PackageManager.DONT_KILL_APP);
 	}
 
 	@Override
@@ -66,35 +103,99 @@ public class NotificationListener extends NotificationListenerService {
 			instance = null;
 			stopActivityRecognition();
 			stopFusedLocationIntentService();
+
 		}
 		super.onListenerDisconnected();
 	}
 
 	@Override
 	public void onNotificationPosted(StatusBarNotification sbn) {
+		Log.d("[DEBUG]", "onNotificationPosted NotiListener");
+
 		try {
-			NotificationHandler notificationHandler = new NotificationHandler(this);
-			notificationHandler.handlePosted(sbn);
+			// Use synchronized processing to ensure filtering happens before handling
+			executor.execute(() -> {
+				AppFilterEntity app = db.appFilterDao().getByPackage(sbn.getPackageName());
+
+				// Only process notifications from enabled apps
+				if (app == null || !app.isEnabled()){
+					Log.d("[DEBUG]", "[MyNotiLog] Notification filtered out from: " + sbn.getPackageName());
+					return;
+				}
+				mainHandler.post(() -> {
+					try {
+						NotificationHandler notificationHandler = new NotificationHandler(getApplicationContext());
+						Log.d("[DEBUG]", "[MyNotiLog] New notification found from: " + sbn.getPackageName());
+						notificationHandler.handlePosted(sbn);
+
+
+					} catch (Exception e) {
+						if(Const.DEBUG) e.printStackTrace();
+					}
+				});
+			});
 		} catch (Exception e) {
 			if(Const.DEBUG) e.printStackTrace();
+			Log.e("[DEBUG]", e.getMessage());
+
 		}
 	}
 
 	@Override
 	public void onNotificationRemoved(StatusBarNotification sbn) {
+		Log.d("[DEBUG]", "onNotificationRemoved NotiListener");
+
 		try {
-			NotificationHandler notificationHandler = new NotificationHandler(this);
-			notificationHandler.handleRemoved(sbn, -1);
+			// Use synchronized processing to ensure filtering happens before handling
+			executor.execute(() -> {
+				AppFilterEntity app = db.appFilterDao().getByPackage(sbn.getPackageName());
+
+				// Only process notifications from enabled apps
+				if (app == null || !app.isEnabled()){
+					Log.d("[DEBUG]", "[MyNotiLog] Notification removal filtered out from: " + sbn.getPackageName());
+					return;
+				}
+				mainHandler.post(() -> {
+					try {
+						NotificationHandler notificationHandler = new NotificationHandler(getApplicationContext());
+						Log.d("[DEBUG]", "[MyNotiLog] Notification removal from: " + sbn.getPackageName());
+						notificationHandler.handleRemoved(sbn, -1);
+					} catch (Exception e) {
+						if(Const.DEBUG) e.printStackTrace();
+					}
+				});
+			});
 		} catch (Exception e) {
 			if(Const.DEBUG) e.printStackTrace();
+
+			Log.e("[DEBUG]", e.getMessage());
 		}
 	}
 
 	@Override
 	public void onNotificationRemoved(StatusBarNotification sbn, RankingMap rankingMap, int reason) {
+		Log.d("[DEBUG]", "onNotificationRemoved NotiListener");
+
 		try {
-			NotificationHandler notificationHandler = new NotificationHandler(this);
-			notificationHandler.handleRemoved(sbn, reason);
+			// Use synchronized processing to ensure filtering happens before handling
+			executor.execute(() -> {
+				AppFilterEntity app = db.appFilterDao().getByPackage(sbn.getPackageName());
+
+				// Only process notifications from enabled apps
+				if (app == null || !app.isEnabled()){
+					Log.d("[DEBUG]", "[MyNotiLog] Notification removal filtered out from: " + sbn.getPackageName() + " reason: " + reason);
+					return;
+				}
+				mainHandler.post(() -> {
+					try {
+						NotificationHandler notificationHandler = new NotificationHandler(getApplicationContext());
+						Log.d("[DEBUG]", "[MyNotiLog] Notification removal from: " + sbn.getPackageName() + " reason: " + reason);
+						notificationHandler.handleRemoved(sbn, reason);
+					} catch (Exception e) {
+						if(Const.DEBUG) e.printStackTrace();
+					}
+				});
+			});
 		} catch (Exception e) {
 			if(Const.DEBUG) e.printStackTrace();
 		}
