@@ -30,16 +30,32 @@
         app:iconSpaceReserved="false" />
 
     <androidx.preference.Preference
-        android:key="pref_about"
-        android:title="@string/settings_about"
-        android:summary="@string/settings_about_summary"
-        app:iconSpaceReserved="false" />
+        android:key="pref_speech_lang"
+        android:title="Spoken Language"
+        android:summary="Change language for spoken string"
+        app:iconSpaceReserved="false"
+        android:defaultValue="default_lang"
+        />
+
+    <androidx.preference.Preference
+        android:key="pref_app_filter"
+        android:title="App Filter Notification"
+        android:summary="Choose application to capture notification"
+        app:iconSpaceReserved="false"
+        android:defaultValue="default_lang"
+        />
 
     <androidx.preference.Preference
         android:key="pref_version"
         android:title="@string/settings_version"
         android:summary="0"
-        android:enabled="false"
+        android:enabled="true"
+        app:iconSpaceReserved="false" />
+
+    <androidx.preference.Preference
+        android:key="pref_about"
+        android:title="@string/settings_about"
+        android:summary="@string/settings_about_summary"
         app:iconSpaceReserved="false" />
 
 </androidx.preference.PreferenceScreen>
