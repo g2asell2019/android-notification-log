@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <!-- App Name / Title -->
+    <TextView
+        android:id="@+id/app_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="App Name"
+        android:textSize="20sp"
+        android:textStyle="bold"/>
+
+    <!-- Regex Input -->
+    <EditText
+        android:id="@+id/regex_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter regex pattern"
+        android:inputType="text"/>
+
+    <!-- Test Message Input -->
+    <EditText
+        android:id="@+id/test_message"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Enter test notification text"
+        android:inputType="textMultiLine"/>
+
+    <!-- Regex Match Preview -->
+    <TextView
+        android:id="@+id/regex_result"
+        android:text="Match result will appear here"
+        android:textColor="#444"
+        android:layout_marginTop="12dp"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <!-- Toggle Advanced -->
+    <Button
+        android:id="@+id/toggle_advanced"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Show Advanced"/>
+
+    <!-- Advanced Section -->
+    <LinearLayout
+        android:id="@+id/advanced_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:paddingTop="8dp">
+
+        <!-- Format string input -->
+        <EditText
+            android:id="@+id/format_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Format: Your transaction is [1] on [2]"
+            android:inputType="text"/>
+
+        <!-- Formatted result -->
+        <TextView
+            android:id="@+id/formatted_result"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Formatted result"
+            android:paddingTop="8dp"/>
+
+        <!-- Speak Button -->
+        <Button
+            android:id="@+id/speak_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Speak"/>
+    </LinearLayout>
+
+    <!-- Save Button -->
+
+
+    <Button
+        android:id="@+id/test_regex_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Test Regex"/>
+
+    <Button
+        android:id="@+id/save_button"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Save"/>
+</LinearLayout>

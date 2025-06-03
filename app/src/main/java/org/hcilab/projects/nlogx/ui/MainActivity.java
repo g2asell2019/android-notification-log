@@ -1,28 +1,102 @@
 package org.hcilab.projects.nlogx.ui;
 
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 
 import org.hcilab.projects.nlogx.R;
 import org.hcilab.projects.nlogx.misc.Const;
 import org.hcilab.projects.nlogx.misc.DatabaseHelper;
 import org.hcilab.projects.nlogx.misc.ExportTask;
+import org.hcilab.projects.nlogx.service.MyForegroundServiceJava;
+import org.hcilab.projects.nlogx.service.NotificationCollectorMonitorService;
 import org.hcilab.projects.nlogx.service.NotificationHandler;
 
 public class MainActivity extends AppCompatActivity {
+
+	private MyForegroundServiceJava myService;
+	private boolean mBound = false;
+
+	private ServiceConnection mConnection = new ServiceConnection() {
+		@Override
+		public void onServiceConnected(ComponentName className, IBinder service) {
+			MyForegroundServiceJava.LocalBinder binder = (MyForegroundServiceJava.LocalBinder) service;
+			myService = (MyForegroundServiceJava) binder.getService();
+			mBound = true;
+
+			// Set a callback to receive data from the service
+			myService.setOnCounterChangeListener(new MyForegroundServiceJava.OnCounterChangeListener() {
+				@Override
+				public void onCounterChanged(int newValue) {
+					runOnUiThread(() -> {
+						// Update UI with new counter value
+						Toast.makeText(MainActivity.this, "Counter: " + newValue, Toast.LENGTH_SHORT).show();
+					});
+				}
+			});
+		}
+
+		@Override
+		public void onServiceDisconnected(ComponentName arg0) {
+			mBound = false;
+		}
+	};
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+		Intent intent = new Intent(this, MyForegroundServiceJava.class);
+		bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		if (mBound) {
+			myService.setOnCounterChangeListener(null); // Remove listener!
+			unbindService(mConnection);
+			mBound = false;
+		}
+	}
+
+	// Example: Call a public method from the service (e.g., on a button click)
+	public void onIncrementButtonClick(View view) {
+		if (mBound && myService != null) {
+			myService.incrementCounter();
+		}
+	}
+
+	// Example: Get data from the service
+	public void onShowCounterButtonClick(View view) {
+		if (mBound && myService != null) {
+			int current = myService.getCounter();
+			Toast.makeText(this, "Counter is: " + current, Toast.LENGTH_SHORT).show();
+		}
+	}
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
+		this.startService(new Intent(this, NotificationCollectorMonitorService.class));
+		ContextCompat.startForegroundService(this,
+				new Intent(this, MyForegroundServiceJava.class)
+		);
+
 	}
 
 	@Override
@@ -41,11 +115,9 @@ public class MainActivity extends AppCompatActivity {
 			export();
 			return true;
 		} else if (itemId == R.id.text_speech) {
-			//Intent intent = new Intent(this.getBaseContext(), TextToSpeech.class);
-
-			//this.getBaseContext().startActivity(intent);
-
-
+			Intent intent = new Intent(this.getApplicationContext(), MainActivity2.class);
+			intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+			this.getBaseContext().startActivity(intent);
 		}
 		return super.onOptionsItemSelected(item);
 	}
